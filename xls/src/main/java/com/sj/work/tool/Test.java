@@ -20,9 +20,9 @@ public class Test {
 
     public static Map<String,JobDay> accountDay(){
 
-        String workTimeStr= ExcelUtil.readExcel("F://file/1.xlsx", 7);
+        String workTimeStr= ExcelUtil.readExcel("D://file/1.xlsx", 7);
 
-        String workStr= ExcelUtil.readExcel("F://file/2.xlsx",12);
+        String workStr= ExcelUtil.readExcel("D://file/2.xlsx", 12);
 
         //正常
         List<Worker> workerList= BeanUtil.convertWorker(workStr);
@@ -32,9 +32,10 @@ public class Test {
 
         //日期序列
         List<String> dateList=dateList();
-
+        //初始化键值对
+        Map<String,String> getNameMap=getName(workerTimeList);
         //人名序列
-        List<String> nameList=nameList();
+        List<String> nameList=nameList(getNameMap);
 
         //员工考勤号+时间作为主键
         for (int j = 0; j <nameList.size() ; j++) {
@@ -49,7 +50,7 @@ public class Test {
 
                 jobTime.setStartTime("0");
                 jobTime.setEndTime("0");
-                jobTime.setName(nameList.get(j));
+                jobTime.setName(getNameMap.get(nameList.get(j)));
 
                 jobTime.setFlag("无");
                 map.put(key,jobTime);
@@ -73,7 +74,8 @@ public class Test {
         //异常
         for (int i = 0; i <workerTimeList.size() ; i++) {
             WorkerTime w=workerTimeList.get(i);
-            String key=w.getNo()+"-"+w.getTime().split(" ")[0];
+            String day=w.getTime().split(" ")[0];
+            String key=w.getNo()+"-"+day;
             JobDay jobTime= map.get(key);
 
             if(map.get(key)!=null){
@@ -92,11 +94,11 @@ public class Test {
 
         }
 
-        for (Map.Entry<String, JobDay> entry : map.entrySet()) {
-            //System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue().toString());
-            System.out.println(entry.getValue().toString());
-
-        }
+//        for (Map.Entry<String, JobDay> entry : map.entrySet()) {
+//            //System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue().toString());
+//            System.out.println(entry.getValue().toString());
+//
+//        }
 
 
         return  map;
@@ -104,10 +106,25 @@ public class Test {
 
 
 
-    private static List<String>   nameList(){
+    private static Map<String,String>  getName(List<WorkerTime> workerTimeList){
+
+        Map<String,String> map=new HashMap<String, String>();
+
+        for (int i = 0; i <workerTimeList.size() ; i++) {
+            map.put(workerTimeList.get(i).getNo(),workerTimeList.get(i).getName());
+        }
+
+        return map;
+    }
+
+
+
+    private static List<String>   nameList(Map<String,String> map){
         List<String> datelist=new ArrayList<String>();
-        datelist.add("29");
-        datelist.add("31");
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            //System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue().toString());
+            datelist.add(entry.getKey());
+        }
         return datelist;
     }
 
@@ -148,6 +165,18 @@ public class Test {
     }
 
     public static void main(String[] args) {
-        accountDay();
+
+        Map<String,JobDay> map=accountDay();
+
+        List<JobDay> list=new ArrayList<JobDay>();
+
+        for (Map.Entry<String, JobDay> entry : map.entrySet()) {
+            //System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue().toString());
+          //  System.out.println(entry.getValue().toString());
+            list.add(entry.getValue());
+        }
+
+        ExcelUtil.writeExcel(list,6,"D://file/3.xlsx");
+
     }
 }
