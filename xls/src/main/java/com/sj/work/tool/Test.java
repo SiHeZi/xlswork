@@ -85,6 +85,10 @@ public class Test {
                     }
                 }
 
+                hour=Integer.valueOf(w.getEndTime().split(":")[0]);
+                if(hour<18){
+                    jobTime.setFlag("下班时间有问题请处理");
+                }
 
             }
 
@@ -103,14 +107,12 @@ public class Test {
                 if(jobTime.getStartTime().equals(kongFlag)){
 
                     String time=getTime(w.getTime(),"14:00",0);
-
                     jobTime.setStartTime(time);
                     jobTime.setName(w.getName());
                 }
                 if(jobTime.getEndTime().equals(kongFlag)){
 
                     String time=getTime(w.getTime(),"14:00",1);
-
                     jobTime.setEndTime(time);
                     jobTime.setName(w.getName());
 
