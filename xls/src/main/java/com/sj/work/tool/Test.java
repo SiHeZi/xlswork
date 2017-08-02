@@ -4,25 +4,26 @@ import com.sj.work.tool.common.JobDay;
 import com.sj.work.tool.common.Worker;
 import com.sj.work.tool.common.WorkerTime;
 import com.sj.work.tool.util.BeanUtil;
+import com.sj.work.tool.util.DataUtil;
 import com.sj.work.tool.util.ExcelUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by zhaosiji on 2017/8/1.
  */
 public class Test {
 
-    static Map<String,JobDay> map=new HashMap<String, JobDay>();
+    static Map<String,JobDay> map=new LinkedHashMap<String, JobDay>();
+
+    static String kongFlag="";
+    static String status="有问题请处理";
 
     public static Map<String,JobDay> accountDay(){
 
-        String workTimeStr= ExcelUtil.readExcel("D://file/1.xlsx", 7);
+        String workTimeStr= ExcelUtil.readExcel("F://file/1.xlsx", 7);
 
-        String workStr= ExcelUtil.readExcel("D://file/2.xlsx", 12);
+        String workStr= ExcelUtil.readExcel("F://file/2.xlsx", 12);
 
         //正常
         List<Worker> workerList= BeanUtil.convertWorker(workStr);
@@ -32,8 +33,10 @@ public class Test {
 
         //日期序列
         List<String> dateList=dateList();
+
         //初始化键值对
         Map<String,String> getNameMap=getName(workerTimeList);
+
         //人名序列
         List<String> nameList=nameList(getNameMap);
 
@@ -47,32 +50,49 @@ public class Test {
 
                 jobTime.setNo(nameList.get(j));
                 jobTime.setDay(dateList.get(i));
-
-                jobTime.setStartTime("0");
-                jobTime.setEndTime("0");
+                jobTime.setStartTime(kongFlag);
+                jobTime.setEndTime(kongFlag);
                 jobTime.setName(getNameMap.get(nameList.get(j)));
 
-                jobTime.setFlag("无");
+                jobTime.setFlag(kongFlag);
+
                 map.put(key,jobTime);
+
             }
         }
 
         //正常
         for (int i = 0; i <workerList.size() ; i++) {
+
             Worker w=workerList.get(i);
             String key=w.getNo()+"-"+w.getDay();
             JobDay jobTime= map.get(key);
 
             if(map.get(key)!=null){
                 jobTime.setStartTime(w.getDay() + " " + w.getStartTime());
-                jobTime.setEndTime(w.getDay()+" "+w.getEndTime());
+                jobTime.setEndTime(w.getDay() + " " + w.getEndTime());
                 jobTime.setName(w.getName());
+
+                //开始时间
+                int hour=Integer.valueOf(w.getStartTime().split(":")[0]);
+                int fen=Integer.valueOf(w.getStartTime().split(":")[1]);
+                if((hour<9&&fen<60)||(hour==9&&fen<10)){
+
+                }else {
+                  jobTime.setFlag("迟到"+(hour-9)+"小时"+fen+"分钟");
+                    if((hour-9)>4){
+                        jobTime.setFlag(status);
+                    }
+                }
+
+
             }
 
         }
 
         //异常
         for (int i = 0; i <workerTimeList.size() ; i++) {
+
             WorkerTime w=workerTimeList.get(i);
             String day=w.getTime().split(" ")[0];
             String key=w.getNo()+"-"+day;
@@ -80,18 +100,22 @@ public class Test {
 
             if(map.get(key)!=null){
 
-                if(jobTime.getStartTime().equals("0")){
-                    jobTime.setStartTime(w.getTime());
+                if(jobTime.getStartTime().equals(kongFlag)){
+
+                    String time=getTime(w.getTime(),"14:00",0);
+
+                    jobTime.setStartTime(time);
                     jobTime.setName(w.getName());
                 }
-                if(jobTime.getEndTime().equals("0")){
-                    jobTime.setEndTime(w.getTime());
+                if(jobTime.getEndTime().equals(kongFlag)){
+
+                    String time=getTime(w.getTime(),"14:00",1);
+
+                    jobTime.setEndTime(time);
                     jobTime.setName(w.getName());
 
                 }
-
             }
-
         }
 
 //        for (Map.Entry<String, JobDay> entry : map.entrySet()) {
@@ -100,19 +124,39 @@ public class Test {
 //
 //        }
 
-
         return  map;
+
     }
 
 
+    private static  String getTime(String time,String compareDay,int type){
+       //开始
+       if(type==0){
+          if( DataUtil.isCompare(time,compareDay)){
+              return time;
+          }
+       }
+       //结束
+       else{
+           if(!DataUtil.isCompare(time,compareDay)){
+               return time;
+           }
+       }
 
+        return "";
+    }
+
+
+    //获取人数键值对
     private static Map<String,String>  getName(List<WorkerTime> workerTimeList){
 
-        Map<String,String> map=new HashMap<String, String>();
+        Map<String,String> map=new LinkedHashMap<String, String>();
 
         for (int i = 0; i <workerTimeList.size() ; i++) {
             map.put(workerTimeList.get(i).getNo(),workerTimeList.get(i).getName());
         }
+
+        System.out.println("用户人数是："+map.size());
 
         return map;
     }
@@ -130,37 +174,18 @@ public class Test {
 
     private static  List<String>  dateList(){
         List<String> datelist=new ArrayList<String>();
-        datelist.add("2017/7/1");
-        datelist.add("2017/7/2");
-        datelist.add("2017/7/3");
-        datelist.add("2017/7/4");
-        datelist.add("2017/7/5");
-        datelist.add("2017/7/6");
-        datelist.add("2017/7/7");
-        datelist.add("2017/7/8");
-        datelist.add("2017/7/9");
-        datelist.add("2017/7/10");
-        datelist.add("2017/7/11");
-        datelist.add("2017/7/12");
-        datelist.add("2017/7/13");
-        datelist.add("2017/7/14");
-        datelist.add("2017/7/15");
-        datelist.add("2017/7/16");
-        datelist.add("2017/7/17");
-        datelist.add("2017/7/18");
-        datelist.add("2017/7/19");
-        datelist.add("2017/7/20");
-        datelist.add("2017/7/21");
-        datelist.add("2017/7/22");
-        datelist.add("2017/7/23");
-        datelist.add("2017/7/24");
-        datelist.add("2017/7/25");
-        datelist.add("2017/7/26");
-        datelist.add("2017/7/27");
-        datelist.add("2017/7/28");
-        datelist.add("2017/7/29");
-        datelist.add("2017/7/30");
-        datelist.add("2017/7/31");
+
+        String year="2017";
+        String month="7";
+        int num=32;
+
+        for (int i = 1; i <num ; i++) {
+                String date=year+"-"+month+"-"+i;
+            if(DataUtil.getWeedId(date)<6){
+                datelist.add(date.replace("-","/"));
+            }
+        }
+
         return datelist;
     }
 
@@ -173,10 +198,15 @@ public class Test {
         for (Map.Entry<String, JobDay> entry : map.entrySet()) {
             //System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue().toString());
           //  System.out.println(entry.getValue().toString());
+            if(entry.getValue().getEndTime().equals("")||entry.getValue().getStartTime().equals(""))
+            {
+                entry.getValue().setFlag(status);
+            }
+
             list.add(entry.getValue());
         }
 
-        ExcelUtil.writeExcel(list,6,"D://file/3.xlsx");
+        ExcelUtil.writeExcel(list, 6, "F://file/3.xlsx");
 
     }
 }

@@ -16,7 +16,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by zhaosiji on 2017/8/1.
@@ -130,7 +129,7 @@ public class ExcelUtil {
                 }
             }
         }
-        return xlsBuffer.toString().substring(0,xlsBuffer.toString().length()-1);
+        return xlsBuffer.toString().substring(0, xlsBuffer.toString().length() - 1);
     }
 
     /**
@@ -144,35 +143,21 @@ public class ExcelUtil {
         }
     }
 
-
     /**
-     * 判断后缀为xlsx的excel文件的数据类型
+     * 判断Excel的版本,获取Workbook
      */
-    private  static String getValue(XSSFCell xssfRow) {
-        if (xssfRow.getCellType() == xssfRow.CELL_TYPE_BOOLEAN) {
-            return String.valueOf(xssfRow.getBooleanCellValue());
-        } else if (xssfRow.getCellType() == xssfRow.CELL_TYPE_NUMERIC) {
-            return String.valueOf(xssfRow.getNumericCellValue());
-        } else {
-            return String.valueOf(xssfRow.getStringCellValue());
+    public static Workbook getWorkbok(File file) throws IOException{
+        Workbook wb = null;
+        FileInputStream in = new FileInputStream(file);
+        if(file.getName().endsWith(EXCEL_XLS)){  //Excel 2003
+            wb = new HSSFWorkbook(in);
+        }else if(file.getName().endsWith(EXCEL_XLSX)){  // Excel 2007/2010
+            wb = new XSSFWorkbook(in);
         }
+        return wb;
     }
 
-
-    /**
-     * 判断后缀为xls的excel文件的数据类型
-     */
-    private String getValue(HSSFCell hssfCell) {
-        if (hssfCell.getCellType() == hssfCell.CELL_TYPE_BOOLEAN) {
-            return String.valueOf(hssfCell.getBooleanCellValue());
-        } else if (hssfCell.getCellType() == hssfCell.CELL_TYPE_NUMERIC) {
-            return String.valueOf(hssfCell.getNumericCellValue());
-        } else {
-            return String.valueOf(hssfCell.getStringCellValue());
-        }
-    }
-
-
+    //输出
     public static void writeExcel(List<JobDay> dataList, int cloumnCount,String finalXlsxPath){
         OutputStream out = null;
         try {
@@ -201,7 +186,10 @@ public class ExcelUtil {
             for (int j = 0; j < dataList.size(); j++) {
                 // 创建一行：从第二行开始，跳过属性列
                 Row row = sheet.createRow(j + 1);
-                // 得到要插入的每一条记录
+
+                /**
+                 * 此处可优化为通用接口
+                 */
                 JobDay job = dataList.get(j);
 
                 String no = job.getNo();
@@ -251,23 +239,31 @@ public class ExcelUtil {
     }
 
     /**
-     * 判断Excel的版本,获取Workbook
-     * @param
-     * @param
-     * @return
-     * @throws IOException
-     */
-    public static Workbook getWorkbok(File file) throws IOException{
-        Workbook wb = null;
-        FileInputStream in = new FileInputStream(file);
-        if(file.getName().endsWith(EXCEL_XLS)){  //Excel 2003
-            wb = new HSSFWorkbook(in);
-        }else if(file.getName().endsWith(EXCEL_XLSX)){  // Excel 2007/2010
-            wb = new XSSFWorkbook(in);
-        }
-        return wb;
-    }
-
+     * 判断后缀为xlsx的excel文件的数据类型
+     * */
+//    private  static String getValue(XSSFCell xssfRow) {
+//        if (xssfRow.getCellType() == xssfRow.CELL_TYPE_BOOLEAN) {
+//            return String.valueOf(xssfRow.getBooleanCellValue());
+//        } else if (xssfRow.getCellType() == xssfRow.CELL_TYPE_NUMERIC) {
+//            return String.valueOf(xssfRow.getNumericCellValue());
+//        } else {
+//            return String.valueOf(xssfRow.getStringCellValue());
+//        }
+//    }
+//
+//
+//    /**
+//     * 判断后缀为xls的excel文件的数据类型
+//     */
+//    private String getValue(HSSFCell hssfCell) {
+//        if (hssfCell.getCellType() == hssfCell.CELL_TYPE_BOOLEAN) {
+//            return String.valueOf(hssfCell.getBooleanCellValue());
+//        } else if (hssfCell.getCellType() == hssfCell.CELL_TYPE_NUMERIC) {
+//            return String.valueOf(hssfCell.getNumericCellValue());
+//        } else {
+//            return String.valueOf(hssfCell.getStringCellValue());
+//        }
+//    }
     public static void main(String[] args) throws Exception{
        // System.out.println(ExcelUtil.readExcel("F://file/1.xlsx",7));
     }
