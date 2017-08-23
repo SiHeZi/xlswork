@@ -24,7 +24,7 @@ public class Test {
         String workTimeStr= ExcelUtil.readExcel("F://file/1.xlsx", 7);
 
         String workStr= ExcelUtil.readExcel("F://file/2.xlsx", 12);
-
+        System.out.println(workStr);
         //正常
         List<Worker> workerList= BeanUtil.convertWorker(workStr);
 
