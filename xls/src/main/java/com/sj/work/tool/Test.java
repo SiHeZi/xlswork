@@ -17,6 +17,7 @@ public class Test {
     static Map<String,JobDay> map=new LinkedHashMap<String, JobDay>();
 
     static String kongFlag="";
+
     static String status="有问题请处理";
 
     public static Map<String,JobDay> accountDay(){
@@ -24,7 +25,6 @@ public class Test {
         String workTimeStr= ExcelUtil.readExcel("F://file/1.xlsx", 7);
 
         String workStr= ExcelUtil.readExcel("F://file/2.xlsx", 12);
-        System.out.println(workStr);
         //正常
         List<Worker> workerList= BeanUtil.convertWorker(workStr);
 
@@ -76,8 +76,9 @@ public class Test {
                 //开始时间
                 int hour=Integer.valueOf(w.getStartTime().split(":")[0]);
                 int fen=Integer.valueOf(w.getStartTime().split(":")[1]);
-                if((hour<9&&fen<60)||(hour==9&&fen<10)){
 
+                if((hour<9&&fen<60)||(hour==9&&fen<10)){
+                    jobTime.setFlag("");
                 }else {
                   jobTime.setFlag("迟到"+(hour-9)+"小时"+fen+"分钟");
                     if((hour-9)>4){
@@ -88,6 +89,9 @@ public class Test {
                 hour=Integer.valueOf(w.getEndTime().split(":")[0]);
                 if(hour<18){
                     jobTime.setFlag("下班时间有问题请处理");
+                }else {
+                    jobTime.setFlag("");
+
                 }
 
             }
@@ -103,20 +107,61 @@ public class Test {
             JobDay jobTime= map.get(key);
 
             if(map.get(key)!=null){
-
+                //开始时间、结束时间
                 if(jobTime.getStartTime().equals(kongFlag)){
 
                     String time=getTime(w.getTime(),"14:00",0);
                     jobTime.setStartTime(time);
                     jobTime.setName(w.getName());
+                }else{
+
+
+                    String time=getTime1(w.getTime(), jobTime.getStartTime().split(" ")[1], 0,day);
+                    jobTime.setStartTime(time);
+                    jobTime.setName(w.getName());
+
+                    // 开始时间
+                    int hour=Integer.valueOf(jobTime.getStartTime().split(" ")[1].split(":")[0]);
+                    int fen=Integer.valueOf(jobTime.getStartTime().split(" ")[1].split(":")[1]);
+
+
+                    if((hour<9&&fen<60)||(hour==9&&fen<10)){
+                        jobTime.setFlag("");
+                    }else {
+                        jobTime.setFlag("迟到" + (hour - 9) + "小时" + fen + "分钟");
+                        if((hour-9)>4){
+                            jobTime.setFlag(status);
+                        }
+                    }
+
+
                 }
+
+
                 if(jobTime.getEndTime().equals(kongFlag)){
 
                     String time=getTime(w.getTime(),"14:00",1);
                     jobTime.setEndTime(time);
                     jobTime.setName(w.getName());
 
+                }else{
+
+                    String time=getTime1(w.getTime(), jobTime.getEndTime().split(" ")[1],1,day);
+                    jobTime.setEndTime(time);
+                    jobTime.setName(w.getName());
+
+                    int hour=Integer.valueOf(jobTime.getEndTime().split(" ")[1].split(":")[0]);
+                    if(hour<18){
+                        jobTime.setFlag("下班时间有问题请处理");
+                    }else {
+
+                        if(!jobTime.getFlag().equals(status)){
+                            jobTime.setFlag("");
+                        }
+                    }
+
                 }
+
             }
         }
 
@@ -130,7 +175,31 @@ public class Test {
 
     }
 
+    //没有时间比较
+    private static  String getTime1(String time,String compareDay,int type,String day){
+        //开始
+        if(type==0){
+            if( DataUtil.isCompare(time,compareDay)){
+                return time;
+            }else {
+                return day+" "+compareDay;
+            }
+        }
+        //结束
+        else{
+            if(!DataUtil.isCompare(time,compareDay)){
+                return time;
+            }else {
+                return  day+" "+compareDay;
+            }
+        }
 
+    }
+
+
+
+
+    //没有时间比较
     private static  String getTime(String time,String compareDay,int type){
        //开始
        if(type==0){
@@ -155,10 +224,14 @@ public class Test {
         Map<String,String> map=new LinkedHashMap<String, String>();
 
         for (int i = 0; i <workerTimeList.size() ; i++) {
+
+
             map.put(workerTimeList.get(i).getNo(),workerTimeList.get(i).getName());
+
+
         }
 
-        System.out.println("用户人数是："+map.size());
+        System.out.println("员工人数是："+map.size());
 
         return map;
     }
@@ -178,7 +251,7 @@ public class Test {
         List<String> datelist=new ArrayList<String>();
 
         String year="2017";
-        String month="7";
+        String month="8";
         int num=32;
 
         for (int i = 1; i <num ; i++) {
@@ -189,6 +262,7 @@ public class Test {
         }
 
         return datelist;
+
     }
 
     public static void main(String[] args) {
